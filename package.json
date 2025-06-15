@@ -1,0 +1,22 @@
+{
+  "name": "vite-starter",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
+    "daisyui": "^5.0.27",
+    "vite": "^6.3.1"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "embla-carousel": "^8.6.0",
+    "embla-carousel-auto-scroll": "^8.6.0",
+    "tailwindcss": "^4.1.4"
+  }
+}
