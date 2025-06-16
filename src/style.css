@@ -37,3 +37,39 @@
   --noise: 0;
 }
 
+* {
+  font-family: "Hammersmith One", sans-serif !important;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.timeline-marker {
+  position: relative;
+}
+
+/* the vertical bar */
+.timeline-marker::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 0%;
+  transform: translate(-50%, 50%);
+  width: 12px; 
+  height: 12px;
+  background-color: rgb(142,32,91);
+  border-radius: 50%;
+}
+
+/* the little circle at the bottom */
+.timeline-marker::after {
+  content: "";
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  transform: translateX(-50%);
+  width: 4px;         
+  height: 100%;
+  background-color: rgb(142,32,91);
+  border-radius: 2px;
+}
+

@@ -19,9 +19,8 @@ export default {
 
 <template>
 
-    <div class="hero min-h-[60vh] bg-cover bg-bottom bg-no-repeat bg-opacity-75"
-        style="background-image: url('https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/pexels_kovyrina_1692984_22b8b1f82e.jpg')">
-        <div class="hero-content text-center bg-white/30 backdrop-invert backdrop-opacity-10 p-10 rounded-box"    
+    <div class="hero min-h-[30vh] bg-cover bg-bottom bg-no-repeat bg-opacity-75">
+        <div class="timeline-marker hero-content text-center rounded-box"    
         >
             <div class="max-w-md">
                 <h1 class="text-5xl font-bold">Carol & Alexandre</h1>
