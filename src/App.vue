@@ -1,5 +1,4 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
 
 console.log(import.meta.env.VITE_API_URL)
 </script>
