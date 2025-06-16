@@ -1,5 +1,5 @@
 {
-  "name": "vite-starter",
+  "name": "wedding-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,15 +8,16 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.10",
+    "daisyui": "^5.0.43",
+    "tailwindcss": "^4.1.10",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1"
+  },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
-    "daisyui": "^5.0.27",
-    "vite": "^6.3.1"
-  },
-  "dependencies": {
-    "@tailwindcss/vite": "^4.1.4",
-    "embla-carousel": "^8.6.0",
-    "embla-carousel-auto-scroll": "^8.6.0",
-    "tailwindcss": "^4.1.4"
+    "@vitejs/plugin-vue": "^5.2.3",
+    "vite": "^6.3.5"
   }
 }
