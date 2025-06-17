@@ -35,7 +35,7 @@ export default {
 
     <div class="md:max-w-[80vw] mx-auto m-5 z-25 relative">
         <div
-            class="card relative flex w-full flex-col md:flex-row bg-secondary rounded-box p-10 py-[5rem] items-stretch">
+            class="card relative flex w-full flex-col md:flex-row bg-base-300 rounded-box p-10 py-[5rem] items-stretch">
             <!-- Text side -->
             <div class="w-full md:w-1/2 card p-5 flex flex-col justify-start">
                 <h2 class="text-5xl z-10 mb-10">You are invited for Tea</h2>

@@ -13,6 +13,7 @@ const loading = ref(false)
 
 // 1) Define your form structure up front
 const form = reactive({
+    documentId: '',
     id: null,
     documentId: '',
     firstName: '',
@@ -51,6 +52,7 @@ watchEffect(async (onInvalidate) => {
         data.value = payload;
         const record = payload.data[0]
         // shallow-copy top‑level props
+        form.documentId = record.documentId,
         form.id = record.id
         form.documentId = record.documentId
         form.firstName = record.firstName || ''
@@ -61,13 +63,19 @@ watchEffect(async (onInvalidate) => {
             lastName: g.lastName || ''
         }))
         form.saveTheDate = {
-            attending: record.saveTheDate?.attending ?? false,
-            totalAttending: form.invitee.length,
+            attending: record.saveTheDate?.attending === true ? true : false,
+            totalAttending: record.saveTheDate?.totalAttending,
             notes: record.saveTheDate?.notes || ''
         }
         form.address = {
-            street: '', city: '', province: '', postalCode: '', country: ''
+            street: record.address?.street || '', 
+            city: record.address?.city || '', 
+            province: record.address?.province || '', 
+            postalCode: record.address?.postalCode || '', 
+            country: record.address?.country || ''
         }
+
+        console.log(form)
 
     } catch (err) {
         if (!canceled) error.value = err
@@ -75,6 +83,30 @@ watchEffect(async (onInvalidate) => {
         if (!canceled) loading.value = false
     }
 })
+
+function addInvitee() {
+    form.invitee.push({ firstName: '', lastName: '' });
+}
+
+function removeInvitee(invitee) {
+    const idx = form.invitee.indexOf(invitee);
+    if (idx !== -1) form.invitee.splice(idx, 1);
+}
+
+async function saveTheDate() {
+
+    const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/savethedatesubmit`, {
+        method: "POST",
+        body: JSON.stringify(form),
+    })
+
+    if (!res.ok) throw new Error(res.statusText)
+
+    const payload = await res.json()
+
+    console.log(payload)
+}
 
 
 
@@ -84,7 +116,6 @@ watchEffect(async (onInvalidate) => {
     <div v-if="loading">Loading…</div>
     <div v-else-if="error">Error: {{ error.message }}</div>
     <template v-else-if="data">
-
 
         <div class="flex flex-wrap gap-4 justify-center bg-base-300 py-10">
             <!-- Column 1: make it a flex container -->
@@ -110,13 +141,13 @@ watchEffect(async (onInvalidate) => {
                         <fieldset class="fieldset">
                             <legend class="fieldset-legend">Attending</legend>
                             <label class="label">
-                                <input v-model="form.confirmSaveTheDate" type="checkbox" checked="checked"
+                                <input v-model="form.saveTheDate.attending" type="checkbox" checked="checked"
                                     class="toggle" />
-                                {{ form.confirmSaveTheDate === false ? "No" : "Yes" }}
+                                {{ form.saveTheDate.attending === false ? "No" : "Yes" }}
                             </label>
                         </fieldset>
 
-                        <template v-if="form.confirmSaveTheDate === true">
+                        <template v-if="form.saveTheDate.attending === true">
 
                             <fieldset class="fieldset">
                                 <legend class="fieldset-legend">First Name</legend>
@@ -147,14 +178,18 @@ watchEffect(async (onInvalidate) => {
                                     <label class="label">Last Name</label>
                                     <input v-model="guest.lastName" type="text" class="input" placeholder="Last Name" />
 
-                                    <p class="label flex justify-end"><button class="btn btn-neutral mt-4"><svg
-                                                xmlns="http://www.w3.org/2000/svg" height="24px"
-                                                viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
+                                    <p class="label flex justify-end"><button @click="removeInvitee(guest)"
+                                            class="btn btn-error mt-4"><svg xmlns="http://www.w3.org/2000/svg"
+                                                height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
                                                 <path
                                                     d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
                                             </svg></button></p>
                                 </fieldset>
                             </template>
+
+                            <p class="label flex justify-end" v-if="form.invitee.length < form.saveTheDate.totalAttending"><button
+                                    @click="addInvitee" class="btn btn-soft btn-neutral mt-4">Add Guest</button></p>
+
 
                             <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
                                 <legend class="fieldset-legend">Address</legend>
@@ -164,8 +199,7 @@ watchEffect(async (onInvalidate) => {
                                     placeholder="Street Name" />
 
                                 <label class="label">City</label>
-                                <input v-model="form.address.city" type="text" class="input"
-                                    placeholder="City Name" />
+                                <input v-model="form.address.city" type="text" class="input" placeholder="City Name" />
 
                                 <label class="label">Province</label>
                                 <input v-model="form.address.province" type="text" class="input"
@@ -180,12 +214,14 @@ watchEffect(async (onInvalidate) => {
                                     placeholder="Country Name" />
                             </fieldset>
 
-
+                            <fieldset class="fieldset">
+                                <legend class="fieldset-legend">Additional Notes</legend>
+                                <textarea class="textarea" v-model="form.saveTheDate.notes"></textarea>
+                            </fieldset>
                         </template>
 
-
                         <div class="card-actions justify-end">
-                            <button class="btn btn-primary">Buy Now</button>
+                            <button @click="saveTheDate()" class="btn btn-primary">Submit</button>
                         </div>
                     </div>
                 </div>
