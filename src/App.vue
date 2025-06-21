@@ -4,7 +4,7 @@ console.log(import.meta.env.VITE_API_URL)
 </script>
 
 <template>
-  <main class="md:m-10 max-w-7xl m-auto">
+  <main class="max-w-7xl m-auto">
     <RouterView />
   </main>
 </template>
