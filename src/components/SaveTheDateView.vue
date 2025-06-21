@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ref, watchEffect } from 'vue'
+import { toRefs } from 'vue'
 import { reactive } from 'vue'
 
 const route = useRoute()
@@ -15,6 +16,18 @@ const submitData = ref(null)
 const submitError = ref(null)
 const submitLoading = ref(false)
 const submitCompleted = ref(false)
+
+const props = defineProps({
+    formHeader: {
+        type: String,
+        default: '',
+    },
+    formCopyText: {
+        type: String,
+        default: '',
+    },
+})
+const { formHeader, formCopyText } = toRefs(props)
 
 // 1) Define your form structure up front
 const form = reactive({
@@ -37,6 +50,10 @@ const form = reactive({
 })
 
 watchEffect(async (onInvalidate) => {
+
+    console.log(formHeader)
+    console.log(formCopyText)
+
     const e = email.value
     if (!e) return
 
@@ -129,66 +146,62 @@ async function saveTheDate() {
     <div v-else-if="error">Error: {{ error.message }}</div>
     <template v-else-if="data">
 
-        <div class="flex flex-wrap gap-4 justify-center bg-base-300 py-10">
-            <!-- Column 1: make it a flex container -->
-            <div class="w-full md:w-[48%] flex justify-center">
-                <div class="card bg-base-300 rounded-box p-4">
-                    <!-- wrap your image in a <figure> for a DaisyUI card -->
-                    <figure class="w-full">
-                        <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/IMG_1809_42aec5b021.jpeg"
-                            alt="" class="object-contain w-full h-auto" />
-                    </figure>
-                </div>
-            </div>
 
-            <!-- Column 2: same thing -->
-            <div class="w-full md:w-[48%] flex justify-center">
-                <div class="card card-border bg-base-300 w-96">
-                    <div class="card-body">
-                        <h2 class="card-title">Save the Date</h2>
-                        <!-- {{ form }} -->
 
-                        <p>Lorem ipsum asking to fill form.</p>
+        <div class="">
+            <div class="card-body">
+                <!-- <h2 class="card-title">{{ formHeader }}</h2> -->
+                <!-- {{ form }} -->
+
+                <!-- <p>{{ formCopyText }}</p> -->
+
+                <h2 class="text-2xl font-semibold">{{ formHeader }}</h2>
+                <p class="mt-4 text-xl">
+                    {{ formCopyText }}
+                </p>
+
+                <div class="form-control w-full">
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Attending</legend>
+                        <label class="label">
+                            <input v-model="form.saveTheDate.attending" type="checkbox" checked="checked"
+                                class="toggle" />
+                            {{ form.saveTheDate.attending === false ? "No" : "Yes" }}
+                        </label>
+                    </fieldset>
+
+                    <template v-if="form.saveTheDate.attending === true">
 
                         <fieldset class="fieldset">
-                            <legend class="fieldset-legend">Attending</legend>
-                            <label class="label">
-                                <input v-model="form.saveTheDate.attending" type="checkbox" checked="checked"
-                                    class="toggle" />
-                                {{ form.saveTheDate.attending === false ? "No" : "Yes" }}
-                            </label>
+                            <legend class="fieldset-legend">First Name</legend>
+                            <input v-model="form.firstName" type="text" class="input w-full" placeholder="First Name" />
                         </fieldset>
 
-                        <template v-if="form.saveTheDate.attending === true">
 
-                            <fieldset class="fieldset">
-                                <legend class="fieldset-legend">First Name</legend>
-                                <input v-model="form.firstName" type="text" class="input" placeholder="First Name" />
-                            </fieldset>
+                        <fieldset class="fieldset">
+                            <legend class="fieldset-legend">Last Name</legend>
+                            <input v-model="form.lastName" type="text" class="input w-full" placeholder="First Name" />
+                        </fieldset>
 
+                        <fieldset class="fieldset">
+                            <legend class="fieldset-legend">Email</legend>
+                            <input v-model="form.email" type="text" class="input w-full" placeholder="First Name" />
+                        </fieldset>
 
-                            <fieldset class="fieldset">
-                                <legend class="fieldset-legend">Last Name</legend>
-                                <input v-model="form.lastName" type="text" class="input" placeholder="First Name" />
-                            </fieldset>
+                        <h2 class="card-title">Invitees</h2>
 
-                            <fieldset class="fieldset">
-                                <legend class="fieldset-legend">Email</legend>
-                                <input v-model="form.email" type="text" class="input" placeholder="First Name" />
-                            </fieldset>
-
-                            <h2 class="card-title">Invitees</h2>
-
-                            <template v-for="(guest, idx) in form.invitee" :key="idx">
-                                <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+                        <template v-for="(guest, idx) in form.invitee" :key="idx">
+                            <div class="relative bg-cover bg-no-repeat bg-center w-full">
+                                <fieldset class="fieldset">
                                     <legend class="fieldset-legend">Guest {{ idx + 1 }}</legend>
 
                                     <label class="label">First Name</label>
-                                    <input v-model="guest.firstName" type="text" class="input"
+                                    <input v-model="guest.firstName" type="text" class="input w-full"
                                         placeholder="First Name" />
 
                                     <label class="label">Last Name</label>
-                                    <input v-model="guest.lastName" type="text" class="input" placeholder="Last Name" />
+                                    <input v-model="guest.lastName" type="text" class="input w-full"
+                                        placeholder="Last Name" />
 
                                     <p class="label flex justify-end"><button @click="removeInvitee(guest)"
                                             class="btn btn-error mt-4"><svg xmlns="http://www.w3.org/2000/svg"
@@ -197,59 +210,61 @@ async function saveTheDate() {
                                                     d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
                                             </svg></button></p>
                                 </fieldset>
-                            </template>
-
-                            <p class="label flex justify-end"
-                                v-if="form.invitee.length < form.saveTheDate.totalAttending"><button @click="addInvitee"
-                                    class="btn btn-soft btn-neutral mt-4">Add Guest</button></p>
-
-
-                            <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
-                                <legend class="fieldset-legend">Address</legend>
-
-                                <label class="label">Street</label>
-                                <input v-model="form.address.street" type="text" class="input"
-                                    placeholder="Street Name" />
-
-                                <label class="label">City</label>
-                                <input v-model="form.address.city" type="text" class="input" placeholder="City Name" />
-
-                                <label class="label">Province</label>
-                                <input v-model="form.address.province" type="text" class="input"
-                                    placeholder="Province Name" />
-
-                                <label class="label">Postal Code</label>
-                                <input v-model="form.address.postalCode" type="text" class="input"
-                                    placeholder="Postal Code Name" />
-
-                                <label class="label">Country</label>
-                                <input v-model="form.address.country" type="text" class="input"
-                                    placeholder="Country Name" />
-                            </fieldset>
-
-                            <fieldset class="fieldset">
-                                <legend class="fieldset-legend">Additional Notes</legend>
-                                <textarea class="textarea" v-model="form.saveTheDate.notes"></textarea>
-                            </fieldset>
+                            </div>
                         </template>
 
+                        <p class="label flex justify-end" v-if="form.invitee.length < form.saveTheDate.totalAttending">
+                            <button @click="addInvitee" class="btn btn-soft btn-neutral mt-4">Add Guest</button>
+                        </p>
 
-                        <div v-if="!submitCompleted">
 
-                            <div class="card-actions justify-end" v-if="!submitLoading">
-                                <button @click="saveTheDate()" class="btn btn-primary">Submit</button>
-                            </div>
-                            <div class="card-actions justify-end" v-if="submitLoading">
-                                <span class="loading loading-spinner text-primary"></span>
-                            </div>
+                        <fieldset class="fieldset">
+                            <legend class="fieldset-legend">Address</legend>
+
+                            <label class="label">Street</label>
+                            <input v-model="form.address.street" type="text" class="input w-full"
+                                placeholder="Street Name" />
+
+                            <label class="label">City</label>
+                            <input v-model="form.address.city" type="text" class="input w-full"
+                                placeholder="City Name" />
+
+                            <label class="label">Province</label>
+                            <input v-model="form.address.province" type="text" class="input w-full"
+                                placeholder="Province Name" />
+
+                            <label class="label">Postal Code</label>
+                            <input v-model="form.address.postalCode" type="text" class="input w-full"
+                                placeholder="Postal Code Name" />
+
+                            <label class="label">Country</label>
+                            <input v-model="form.address.country" type="text" class="input w-full"
+                                placeholder="Country Name" />
+                        </fieldset>
+
+                        <fieldset class="fieldset">
+                            <legend class="fieldset-legend">Additional Notes</legend>
+                            <textarea class="textarea input w-full" v-model="form.saveTheDate.notes"></textarea>
+                        </fieldset>
+                    </template>
+
+
+                    <div v-if="!submitCompleted">
+
+                        <div class="card-actions justify-end" v-if="!submitLoading">
+                            <button @click="saveTheDate()" class="btn btn-primary mt-4">Submit</button>
                         </div>
-                        <template v-else-if="submitCompleted">
-                            <p>Thank you for submitting your information, we hope to see you soon!</p>
-                        </template>
+                        <div class="card-actions justify-end" v-if="submitLoading">
+                            <span class="loading loading-spinner text-primary"></span>
+                        </div>
                     </div>
+                    <template v-else-if="submitCompleted">
+                        <p>Thank you for submitting your information, we hope to see you soon!</p>
+                    </template>
                 </div>
             </div>
         </div>
+
 
     </template>
 
