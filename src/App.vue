@@ -4,7 +4,7 @@ console.log(import.meta.env.VITE_API_URL)
 </script>
 
 <template>
-  <main>
+  <main class="m-10">
     <RouterView />
   </main>
 </template>

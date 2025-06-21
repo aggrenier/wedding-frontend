@@ -11,6 +11,11 @@ const data = ref(null)
 const error = ref(null)
 const loading = ref(false)
 
+const submitData = ref(null)
+const submitError = ref(null)
+const submitLoading = ref(false)
+const submitCompleted = ref(false)
+
 // 1) Define your form structure up front
 const form = reactive({
     documentId: '',
@@ -41,7 +46,7 @@ watchEffect(async (onInvalidate) => {
 
     try {
         const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/api/form`, {
+            `${import.meta.env.VITE_API_URL}/api/savethedate/fetch`, {
             method: "POST",
             body: JSON.stringify({ email: e }),
         })
@@ -53,7 +58,7 @@ watchEffect(async (onInvalidate) => {
         const record = payload.data[0]
         // shallow-copy top‑level props
         form.documentId = record.documentId,
-        form.id = record.id
+            form.id = record.id
         form.documentId = record.documentId
         form.firstName = record.firstName || ''
         form.lastName = record.lastName || ''
@@ -68,14 +73,12 @@ watchEffect(async (onInvalidate) => {
             notes: record.saveTheDate?.notes || ''
         }
         form.address = {
-            street: record.address?.street || '', 
-            city: record.address?.city || '', 
-            province: record.address?.province || '', 
-            postalCode: record.address?.postalCode || '', 
+            street: record.address?.street || '',
+            city: record.address?.city || '',
+            province: record.address?.province || '',
+            postalCode: record.address?.postalCode || '',
             country: record.address?.country || ''
         }
-
-        console.log(form)
 
     } catch (err) {
         if (!canceled) error.value = err
@@ -95,21 +98,30 @@ function removeInvitee(invitee) {
 
 async function saveTheDate() {
 
-    const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/savethedatesubmit`, {
-        method: "POST",
-        body: JSON.stringify(form),
-    })
+    submitLoading.value = true;
 
-    if (!res.ok) throw new Error(res.statusText)
+    let canceled = false;
+    try {
+        const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/savethedate/submit`, {
+            method: "POST",
+            body: JSON.stringify(form),
+        })
 
-    const payload = await res.json()
+        if (canceled) return
+        if (!res.ok) throw new Error(res.statusText)
 
-    console.log(payload)
+        const payload = await res.json()
+        submitLoading.value = false;
+        submitData.value = payload
+        submitCompleted.value = true;
+
+    } catch (err) {
+        if (!canceled) submitError.value = err
+    } finally {
+        if (!canceled) submitLoading.value = false
+    }
 }
-
-
-
 </script>
 
 <template>
@@ -187,8 +199,9 @@ async function saveTheDate() {
                                 </fieldset>
                             </template>
 
-                            <p class="label flex justify-end" v-if="form.invitee.length < form.saveTheDate.totalAttending"><button
-                                    @click="addInvitee" class="btn btn-soft btn-neutral mt-4">Add Guest</button></p>
+                            <p class="label flex justify-end"
+                                v-if="form.invitee.length < form.saveTheDate.totalAttending"><button @click="addInvitee"
+                                    class="btn btn-soft btn-neutral mt-4">Add Guest</button></p>
 
 
                             <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
@@ -220,9 +233,19 @@ async function saveTheDate() {
                             </fieldset>
                         </template>
 
-                        <div class="card-actions justify-end">
-                            <button @click="saveTheDate()" class="btn btn-primary">Submit</button>
+
+                        <div v-if="!submitCompleted">
+
+                            <div class="card-actions justify-end" v-if="!submitLoading">
+                                <button @click="saveTheDate()" class="btn btn-primary">Submit</button>
+                            </div>
+                            <div class="card-actions justify-end" v-if="submitLoading">
+                                <span class="loading loading-spinner text-primary"></span>
+                            </div>
                         </div>
+                        <template v-else-if="submitCompleted">
+                            <p>Thank you for submitting your information, we hope to see you soon!</p>
+                        </template>
                     </div>
                 </div>
             </div>

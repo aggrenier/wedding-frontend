@@ -1,73 +1,106 @@
-<script>
+<script setup>
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { ref, watchEffect } from 'vue'
+import { reactive } from 'vue'
 
 import SavetheDateView from "./SaveTheDateView.vue"
 import CarouselView from "./CarouselView.vue"
 
-export default {
+// reactive state
+const data = ref(null)
+const error = ref(null)
+const loading = ref(false)
 
-    components: {
-        SavetheDateView,
-        CarouselView
-    },
-    methods: {
-        goToAbout() {
-            this.$router.push('/about')
-        },
-    },
+// 1) Define your form structure up front
+const content = reactive({
+})
+
+watchEffect(async (onInvalidate) => {
+
+    loading.value = true
+    let canceled = false
+    onInvalidate(() => { canceled = true })
+
+    try {
+        const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/save-the-date-page`, {
+            method: "get",
+        })
+        if (canceled) return
+        if (!res.ok) throw new Error(res.statusText)
+
+        const payload = await res.json()
+        data.value = payload.data;
+        console.log(data.value)
+
+    } catch (err) {
+        if (!canceled) error.value = err
+    } finally {
+        if (!canceled) loading.value = false
+    }
+})
+
+
+// router instance
+const router = useRouter()
+
+// methods become plain functions
+function goToAbout() {
+    router.push('/about')
 }
 </script>
 
 <template>
 
-    <div class="hero min-h-[30vh] bg-cover bg-bottom bg-no-repeat bg-opacity-75">
-        <div class="timeline-marker hero-content text-center rounded-box"    
-        >
-            <div class="max-w-md">
-                <h1 class="text-5xl font-bold">Carol & Alexandre</h1>
-                <p class="py-6">
-                    The Second of August 2026<br/>
-                    Cedar Island, Orillia
-                    </p>
-                <!-- <button class="btn btn-primary">Get Started</button> -->
-            </div>
-        </div>
-    </div>
+    <div v-if="loading"></div>
+    <template v-else-if="data">
 
-    <div class="md:max-w-[80vw] mx-auto m-5 z-25 relative">
-        <div
-            class="card relative flex w-full flex-col md:flex-row bg-base-300 rounded-box p-10 py-[5rem] items-stretch">
-            <!-- Text side -->
-            <div class="w-full md:w-1/2 card p-5 flex flex-col justify-start">
-                <h2 class="text-5xl z-10 mb-10">You are invited for Tea</h2>
-                <p class="text-3xl z-10">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer rhoncus
-                    ex a bibendum cursus. In dignissim lacinia risus, a ornare lacus fermentum
-                    et. Donec turpis odio, pretium et magna a, malesuada dapibus ex. Cras
-                    congue blandit nunc eget varius.
+        <!-- Yellow hero with background-image -->
+        <section class="relative z-0 bg-contain bg-no-repeat bg-top py-24 z-10 "
+            style="background-image:url('https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/Bg_yellow_4fb2940800.png');
+            background-size: auto 80%;
+            ">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold">{{ data.pageHeader }}</h1>
+                <p class="py-6 text-4xl">
+                    {{ data.pageSubHeaderOne }}<br />
+                    {{ data.pageSubHeaderTwo }}
                 </p>
             </div>
 
-            <!-- Divider -->
-            <div class="divider hidden md:flex divider-horizontal"></div>
+            <!-- Portrait: block + centered + negative bottom margin + high z-index -->
+            <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/portrait_v3_2d0fc9eea5.png" alt="Carol & Alexandre" 
+                class="h-100 w-auto object-contain block mx-auto relative z-20" />
+                <!-- class="block mx-auto relative z-20 -mb-16 w-64 md:w-80" /> -->
+        </section>
 
-            <!-- Image side -->
-            <div class="w-full md:w-1/2 card">
-                <div class="w-full min-h-[300px] md:h-full rounded-box bg-cover bg-bottom bg-no-repeat"
-                    style="background-image: url('https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/pexels_fu_zhichao_176355_587739_40ccde9105.jpg')">
-                </div>
+
+        <!-- Blue section pulled up UNDER the portrait -->
+        <section class="relative pt-50 pb-16 -mt-50 bg-cover bg-no-repeat bg-center w-full"
+            style="background-image:url('https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/Bg_blue_04df1a7b42.png');
+                background-size: 100% 100%;
+                ">
+            <div class="container mx-auto text-white relative px-20">
+                <h2 class="text-2xl font-semibold">{{ data.bodyCopyHeader }}</h2>
+                <p class="mt-4 text-xl">
+                    {{ data.bodyCopyText }}
+                </p>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <div class="hero bg-base-500">
-        <CarouselView />
-    </div>
-
-    <div class="hero bg-base-500">
-        <SavetheDateView />
-    </div>
-
-    <footer class="footer sm:footer-horizontal p-10 mh-10">
         
-    </footer>
+
+        <div class="hero bg-base-500">
+            <CarouselView />
+        </div>
+
+        <div class="hero bg-base-500">
+            <SavetheDateView />
+        </div>
+
+        <footer class="footer sm:footer-horizontal p-10 mh-10">
+
+        </footer>
+    </template>
 </template>
