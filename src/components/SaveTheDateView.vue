@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { ref, watchEffect } from 'vue'
+import { ref, watchEffect, watch } from 'vue'
 import { toRefs } from 'vue'
 import { reactive } from 'vue'
 
@@ -49,10 +49,15 @@ const form = reactive({
     }
 })
 
-watchEffect(async (onInvalidate) => {
+watch(
+    () => form,
+    (newValue, oldValue) => {
+        submitCompleted.value = false
+    },
+    { deep: true }
+)
 
-    console.log(formHeader)
-    console.log(formCopyText)
+watchEffect(async (onInvalidate) => {
 
     const e = email.value
     if (!e) return
@@ -85,7 +90,7 @@ watchEffect(async (onInvalidate) => {
             lastName: g.lastName || ''
         }))
         form.saveTheDate = {
-            attending: record.saveTheDate?.attending === true ? true : false,
+            attending: true,
             totalAttending: record.saveTheDate?.totalAttending,
             notes: record.saveTheDate?.notes || ''
         }
@@ -248,18 +253,24 @@ async function saveTheDate() {
                         </fieldset>
                     </template>
 
+                    <template v-if="!form.saveTheDate.attending === true">
+                        <fieldset class="fieldset">
+                            <legend class="fieldset-legend">Additional Notes</legend>
+                            <textarea class="textarea input w-full" v-model="form.saveTheDate.notes"></textarea>
+                        </fieldset>
+                    </template>
 
-                    <div v-if="!submitCompleted">
-
-                        <div class="card-actions justify-end" v-if="!submitLoading">
-                            <button @click="saveTheDate()" class="btn btn-primary mt-4">Submit</button>
-                        </div>
-                        <div class="card-actions justify-end" v-if="submitLoading">
-                            <span class="loading loading-spinner text-primary"></span>
-                        </div>
+                    <div class="card-actions justify-end" v-if="!submitLoading">
+                        <button @click="saveTheDate()" class="btn btn-primary my-4">Submit</button>
                     </div>
-                    <template v-else-if="submitCompleted">
-                        <p>Thank you for submitting your information, we hope to see you soon!</p>
+                    <div class="card-actions justify-end" v-if="submitLoading">
+                        <span class="loading loading-spinner text-primary"></span>
+                    </div>
+
+                    <template v-if="submitCompleted">
+                        <p v-if="form.saveTheDate.attending">Thank you for submitting your information, we hope to see
+                            you soon!</p>
+                        <p v-if="!form.saveTheDate.attending">We're sorry you can't join us.</p>
                     </template>
                 </div>
             </div>
