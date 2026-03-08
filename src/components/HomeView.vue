@@ -1,56 +1,74 @@
 <script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { ref, watchEffect } from 'vue'
-import { reactive } from 'vue'
+import { ref, watch, nextTick, onUnmounted } from 'vue'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
-import SavetheDateView from "./SaveTheDateView.vue"
-import CarouselView from "./CarouselView.vue"
 
-// reactive state
 const data = ref(null)
 const error = ref(null)
 const loading = ref(false)
 
-// 1) Define your form structure up front
-const content = reactive({
-    formHeader: "",
-    formCopyText: ""
+const mapEl = ref(null)
+let map = null
+
+const parkingPins = [
+    { lat: 44.607874971619395, lng: -79.40781656789056, label: 'Parking lot 1' },
+    { lat: 44.60975215251213, lng: -79.41097963924729, label: 'Parking lot 2' },
+]
+
+async function initMap() {
+    if (!mapEl.value || map) return
+
+    map = L.map(mapEl.value).setView([44.6095657,-79.4089769], 17)
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map)
+
+    parkingPins.forEach((pin) => {
+        L.marker([pin.lat, pin.lng], { icon: L.icon({ iconUrl: 'https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/bus_v3_7cf562106e.png', iconSize: [48, 26], iconAnchor: [24, 12] }) })
+            .addTo(map)
+            .bindPopup(pin.label)
+
+
+    })
+
+    L.marker([44.610155499094994, -79.40542053524905], { icon: L.icon({ iconUrl: 'https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/portrait_v3_2d0fc9eea5.png', iconSize: [62, 50], iconAnchor: [31, 20] }) })
+        .addTo(map)
+        .bindPopup('191 Cedar Island Rd, Orillia')
+}
+
+watch(data, async (newData) => {
+    if (!newData) return
+    await nextTick()
+    initMap()
 })
 
-watchEffect(async (onInvalidate) => {
-
+async function fetchData() {
     loading.value = true
-    let canceled = false
-    onInvalidate(() => { canceled = true })
-
     try {
         const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/api/save-the-date-page`, {
-            method: "get",
-        })
-        if (canceled) return
+            `${import.meta.env.VITE_API_URL}/api/save-the-date-page?populate=*`
+        )
         if (!res.ok) throw new Error(res.statusText)
 
         const payload = await res.json()
-        data.value = payload.data;
-        console.log(data.value)
-
+        data.value = payload.data
     } catch (err) {
-        if (!canceled) error.value = err
+        error.value = err
     } finally {
-        if (!canceled) loading.value = false
+        loading.value = false
+    }
+}
+
+fetchData()
+
+onUnmounted(() => {
+    if (map) {
+        map.remove()
+        map = null
     }
 })
-
-
-// router instance
-const router = useRouter()
-
-// methods become plain functions
-function goToAbout() {
-    router.push('/about')
-}
 </script>
 
 <template>
@@ -70,10 +88,8 @@ function goToAbout() {
                 </p>
             </div>
 
-            <!-- Portrait: block + centered + negative bottom margin + high z-index -->
             <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/portrait_v3_2d0fc9eea5.png"
                 alt="Carol & Alexandre" class="h-100 w-auto object-contain block mx-auto relative z-20" />
-            <!-- class="block mx-auto relative z-20 -mb-16 w-64 md:w-80" /> -->
         </section>
 
 
@@ -82,8 +98,8 @@ function goToAbout() {
                 background-size: 100% 100%;
                 ">
             <div class="container mx-auto text-white relative px-5 md:px-20">
-                <h2 class="text-2xl font-semibold">{{ data.bodyCopyHeader }}</h2>
-                <p class="mt-4 text-xl">
+                <h2 class="text-2xl font-semibold text-center">{{ data.bodyCopyHeader }}</h2>
+                <p class="mt-4 text-xl text-center">
                     {{ data.bodyCopyText }}
                 </p>
             </div>
@@ -106,7 +122,22 @@ function goToAbout() {
                 </div>
 
                 <div class="w-full md:w-[48%] flex justify-center">
-                    <SavetheDateView :formHeader="data.formHeader" :formCopyText="data.formCopyText" />
+
+                    <div class="container mx-auto text-black relative px-5 md:px-20">
+                        <h2 class="text-2xl font-semibold text-center">{{ data.scheduleheader }}</h2>
+                        <div class="text-xl text-center flex flex-col gap-2 mt-4 last-bottom h-8/10">
+                            <template v-for="item, index in data.schedulecopy" :key="index">
+                                <template v-for="child in item.children">
+                                    <h2 class="mt-4 text-xl font-semibold text-center" v-if="item.type === 'heading'">{{
+                                        child.text }}</h2>
+                                    <p v-if="item.type != 'heading' && index != data.schedulecopy.length - 1"
+                                        class="mt-0 text-lg text-center">{{ child.text }}</p>
+                                    <p v-if="item.type != 'heading' && index === data.schedulecopy.length - 1"
+                                        class="mt-auto text-md text-center mt-auto italic">{{ child.text }}</p>
+                                </template>
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -120,19 +151,57 @@ function goToAbout() {
                 <div class="w-full flex justify-center">
                     <div class="">
                         <div class="text-center">
-                            <h1 class="text-2xl font-semibold">{{ data.moreInfoHeader }}</h1>
+                            <h1 class="text-2xl font-semibold">{{ data.dresscodeHeader }}</h1>
                             <p class="py-6 text-xl">
-                                {{ data.moreInfoCopyText }}
+                                {{ data.dresscodeCopy }}
                             </p>
                         </div>
-                        <figure class="w-full">
-                            <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/bus_v3_7cf562106e.png"
-                                alt="" class="object-contain w-full h-auto" />
-                        </figure>
+
+
+                        <div class="carousel carousel-center rounded-box flex gap-4 p-4">
+                            <template v-for="(item, index) in data.dresscodeImages" :key="index">
+                                <div class="carousel-item w-1/3"
+                                    :onclick="`document.getElementById('my_modal_${index}').showModal()`">
+                                    <img :src="item.url" alt="Dress code image" />
+                                </div>
+
+                                <dialog :id="`my_modal_${index}`" class="modal">
+                                    <div class="modal-box">
+                                        <img :src="item.url" alt="Dress code image" />
+                                    </div>
+                                    <form method="dialog" class="modal-backdrop">
+                                        <button>close</button>
+                                    </form>
+                                </dialog>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <section class="relative px-5 py-24 md:px-20 bg-cover bg-no-repeat bg-center w-full" style="background-image:url('https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/Bg_blue_04df1a7b42.png');
+                background-size: 100% 100%;
+                ">
+            <div class="container mx-auto text-white relative px-5 md:px-20 text-center">
+
+                <div class="text-center mb-4">
+                    <h1 class="text-2xl font-semibold">{{ data.parkingHeader }}</h1>
+                    <p class="py-6 text-xl">
+                        {{ data.parkingCopy }}
+                    </p>
+                </div>
+
+                <div ref="mapEl" class="w-full h-[500px] rounded-box overflow-hidden "></div>
+
+                <!-- <figure class="w-1/4 mx-auto my-0">
+                    <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/bus_v3_7cf562106e.png"
+                        alt="" class="object-contain w-full h-auto" />
+                </figure> -->
+            </div>
+        </section>
+
+
 
         <footer class="footer sm:footer-horizontal p-10 mh-10">
             <div class="text-center">

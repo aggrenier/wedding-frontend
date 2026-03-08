@@ -43,3 +43,7 @@
   font-style: normal;
   font-variation-settings:"wdth" 100;
 }
+
+.last-bottom p:last-of-type {
+  margin-top: auto;
+}
