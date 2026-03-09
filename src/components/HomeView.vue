@@ -237,7 +237,7 @@ onUnmounted(() => {
                     <div class="">
 
                         <figure class="w-full">
-                            <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/street_sign_v2_4ba14a539e.png"
+                            <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/airplane_811094ba0d.png"
                                 alt="" class="object-contain w-full h-auto" />
                         </figure>
                     </div>
@@ -258,8 +258,6 @@ onUnmounted(() => {
 
                             <p v-if="item.type != 'heading' && index != data.giftCopy.length - 1"
                                 class="mt-0 text-lg text-center">{{ child.text }}</p>
-                            <!-- <p v-if="item.type != 'heading' && index === data.giftCopy.length - 1"
-                                class="mt-auto text-md text-center mt-auto italic">{{ child.text }}</p> -->
 
                             <template v-for="children in child.children">
                                 <a class="font-medium text-fg-brand hover:italic underline" :href="child.url"
@@ -271,7 +269,7 @@ onUnmounted(() => {
                 </p>
             </div>
 
-            <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/portrait_v3_2d0fc9eea5.png"
+            <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/teacup_pink_295c909ee3.png"
                 alt="Carol & Alexandre" class="h-100 w-auto object-contain block mx-auto relative z-20" />
         </section>
 
