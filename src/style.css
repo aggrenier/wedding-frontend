@@ -47,3 +47,7 @@
 .last-bottom p:last-of-type {
   margin-top: auto;
 }
+
+#app{
+  background-color: mintcream;
+}

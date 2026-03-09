@@ -19,7 +19,7 @@ const parkingPins = [
 async function initMap() {
     if (!mapEl.value || map) return
 
-    map = L.map(mapEl.value).setView([44.6095657,-79.4089769], 17)
+    map = L.map(mapEl.value).setView([44.6095657, -79.4089769], 17)
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
@@ -54,6 +54,8 @@ async function fetchData() {
 
         const payload = await res.json()
         data.value = payload.data
+
+        console.log(payload.data)
     } catch (err) {
         error.value = err
     } finally {
@@ -199,6 +201,78 @@ onUnmounted(() => {
                         alt="" class="object-contain w-full h-auto" />
                 </figure> -->
             </div>
+        </section>
+
+        <!-- Form section -->
+        <section class="relative px-5 py-24 md:px-20 bg-cover bg-no-repeat bg-center w-full" style="background-image:url('https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/Bg_pink_9003ba9237.png');
+                background-size: 100% 100%;
+                ">
+            <div class="flex flex-wrap gap-4 justify-center">
+
+                <div class="w-full md:w-[48%] flex justify-center">
+
+                    <div class="container mx-auto text-black relative px-5 md:px-20">
+                        <h2 class="text-2xl font-semibold text-center">{{ data.hotelHeader }}</h2>
+                        <div class="text-xl text-center flex flex-col gap-2 mt-4 last-bottom h-8/10">
+                            <template v-for="item, index in data.hotelCopyBlocks" :key="index">
+                                <template v-for="child in item.children">
+
+                                    <p v-if="item.type != 'heading' && index != data.schedulecopy.length - 1"
+                                        class="mt-0 text-lg text-center">{{ child.text }}</p>
+                                    <p v-if="item.type != 'heading' && index === data.schedulecopy.length - 1"
+                                        class="mt-auto text-md text-center mt-auto italic">{{ child.text }}</p>
+
+                                    <template v-for="children in child.children">
+                                        <a class="font-medium text-fg-brand hover:italic underline" :href="child.url"
+                                            target="_blank">{{ children.text }}</a>
+                                    </template>
+
+                                </template>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-[48%] flex justify-center">
+                    <div class="">
+
+                        <figure class="w-full">
+                            <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/street_sign_v2_4ba14a539e.png"
+                                alt="" class="object-contain w-full h-auto" />
+                        </figure>
+                    </div>
+                </div>
+
+
+            </div>
+
+        </section>
+
+        <!-- Yellow hero with background-image -->
+        <section class="relative px-5 py-24 md:px-20 bg-cover bg-no-repeat bg-center w-full" style="background-image:url('https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/Bg_yellow_4fb2940800.png'); background-size: 100% 80%; background-position-y: 0;">
+            <div class="text-center">
+                <h2 class="text-2xl font-semibold text-center">{{ data.giftHeader }}</h2>
+                <p class="py-6 text-4xl">
+                    <template v-for="item, index in data.giftCopy" :key="index">
+                        <template v-for="child in item.children">
+
+                            <p v-if="item.type != 'heading' && index != data.giftCopy.length - 1"
+                                class="mt-0 text-lg text-center">{{ child.text }}</p>
+                            <!-- <p v-if="item.type != 'heading' && index === data.giftCopy.length - 1"
+                                class="mt-auto text-md text-center mt-auto italic">{{ child.text }}</p> -->
+
+                            <template v-for="children in child.children">
+                                <a class="font-medium text-fg-brand hover:italic underline" :href="child.url"
+                                    target="_blank">{{ children.text }}</a>
+                            </template>
+
+                        </template>
+                    </template>
+                </p>
+            </div>
+
+            <img src="https://carol-alexandre-wedding.s3.ca-central-1.amazonaws.com/portrait_v3_2d0fc9eea5.png"
+                alt="Carol & Alexandre" class="h-100 w-auto object-contain block mx-auto relative z-20" />
         </section>
 
 
